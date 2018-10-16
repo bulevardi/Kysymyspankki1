@@ -23,7 +23,11 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-
+        if (System.getenv("PORT") != null) {
+            Spark.port(Integer.valueOf(System.getenv("PORT")));
+        }
+        
+        
         Connection conn = getConnection();
 
 
@@ -33,17 +37,15 @@ public class Main {
 
             List<Kysymys> kysymykset = new ArrayList<>();
 
-           // avaa yhteys tietokantaan
-           // tee kysely
+
             PreparedStatement stmt
                     = conn.prepareStatement("SELECT * FROM Kysymys");
             ResultSet tulos = stmt.executeQuery();
 
-            // käsittele kyselyn tulokset
             while (tulos.next()) {
                 kysymykset.add(new Kysymys(tulos.getInt("id"), tulos.getString("kurssi"), tulos.getString("aihe"), tulos.getString("kysymysteksti")));
             }
-            // sulje yhteys tietokantaan
+
             conn.close();
 
             HashMap map = new HashMap<>();
@@ -54,9 +56,7 @@ public class Main {
         }, new ThymeleafTemplateEngine());
 
         Spark.post("/create", (req, res) -> {
-            // avaa yhteys tietokantaan
 
-            // tee kysely
             PreparedStatement stmt
                     = conn.prepareStatement("INSERT INTO Kysymys (kurssi, aihe, kysymysteksti) VALUES (?)");
             stmt.setString(1, req.queryParams("kurssi"));
